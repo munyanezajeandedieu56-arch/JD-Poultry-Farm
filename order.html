@@ -1,0 +1,398 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order | JD Poultry Farm</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background: #f3f6f2;
+            color: #263b2d;
+        }
+
+        header {
+            background: #173f2b;
+            color: white;
+            padding: 25px 7%;
+            text-align: center;
+        }
+
+        main {
+            max-width: 750px;
+            margin: 35px auto;
+            padding: 25px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 3px 15px #00000012;
+        }
+
+        h2 { margin-top: 0; }
+
+        label {
+            display: block;
+            margin-top: 17px;
+            font-weight: bold;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            margin-top: 7px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        button {
+            padding: 13px;
+            background: #198754;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .product-card {
+            display: grid;
+            grid-template-columns: 1fr 110px;
+            gap: 12px;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .product-card h3 {
+            margin: 0 0 7px;
+            font-size: 16px;
+        }
+
+        .product-card p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .product-card input {
+            margin-top: 0;
+        }
+
+        .price-box {
+            margin-top: 20px;
+            padding: 17px;
+            background: #edf4ee;
+            border-radius: 8px;
+            line-height: 2;
+        }
+
+        .price-box strong { color: #173f2b; }
+
+        #message {
+            margin-top: 20px;
+            line-height: 1.6;
+        }
+
+        .whatsapp {
+            display: none;
+            background: #25a55b;
+            color: white;
+            text-decoration: none;
+            padding: 14px;
+            text-align: center;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+
+        .submit-button {
+            width: 100%;
+            margin-top: 22px;
+        }
+
+        @media(max-width: 640px) {
+            main {
+                margin: 20px 12px;
+                padding: 20px;
+            }
+
+            .product-card {
+                grid-template-columns: 1fr 90px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>JD Poultry Farm</h1>
+    <p>Fresh Chicken and Eggs – Quality You Can Trust</p>
+</header>
+
+<main>
+    <h2>Place Your Order</h2>
+    <p>Select one or more products and enter the quantity you need.</p>
+
+    <form id="orderForm">
+
+        <label for="customer">Full Name</label>
+        <input type="text" id="customer" maxlength="100"
+               required placeholder="Enter your full name">
+
+        <label for="phone">Phone Number</label>
+        <input type="tel" id="phone" maxlength="16"
+               required placeholder="e.g. 0790000000">
+
+        <h3 style="margin-top:25px;">Choose Your Products</h3>
+        <div id="productsList">Loading products...</div>
+
+        <div class="price-box">
+            <div>Selected Products: <strong id="selectedCount">0</strong></div>
+            <div>Total Quantity: <strong id="totalQuantity">0</strong></div>
+            <div>Estimated Total: <strong id="grandTotal">0 RWF</strong></div>
+        </div>
+
+        <label for="notes">Additional Information</label>
+        <textarea id="notes" rows="3" maxlength="500"
+                  placeholder="Any additional information..."></textarea>
+
+        <button type="submit" class="submit-button" id="submitBtn">
+            Submit Order
+        </button>
+
+    </form>
+
+    <div id="message" role="status" aria-live="polite"></div>
+
+    <a id="whatsappLink" class="whatsapp"
+       href="#" target="_blank" rel="noopener noreferrer">
+        Continue on WhatsApp
+    </a>
+</main>
+
+<script>
+    const form = document.getElementById("orderForm");
+    const productsList = document.getElementById("productsList");
+    const message = document.getElementById("message");
+    const submitBtn = document.getElementById("submitBtn");
+    const whatsappLink = document.getElementById("whatsappLink");
+
+    let products = [];
+
+    function money(value) {
+        return Number(value).toLocaleString("en-RW") + " RWF";
+    }
+
+    function getSelectedItems() {
+        return products.map(product => {
+            const input = document.getElementById("quantity-" + product.id);
+            const quantity = input ? Number(input.value) : 0;
+
+            return {
+                product_id: Number(product.id),
+                quantity: quantity
+            };
+        }).filter(item => item.quantity > 0);
+    }
+
+    function updateTotal() {
+        const items = getSelectedItems();
+
+        let total = 0;
+        let quantityTotal = 0;
+
+        items.forEach(item => {
+            const product = products.find(
+                p => Number(p.id) === item.product_id
+            );
+
+            if (product) {
+                total += Number(product.price) * item.quantity;
+                quantityTotal += item.quantity;
+            }
+        });
+
+        document.getElementById("selectedCount").textContent = items.length;
+        document.getElementById("totalQuantity").textContent = quantityTotal;
+        document.getElementById("grandTotal").textContent = money(total);
+    }
+
+    async function loadProducts() {
+        productsList.textContent = "Loading products...";
+
+        try {
+            const response = await fetch("/api/products", {
+                cache: "no-store"
+            });
+
+            if (!response.ok) {
+                throw new Error("Could not load products.");
+            }
+
+            products = await response.json();
+            productsList.replaceChildren();
+
+            if (products.length === 0) {
+                productsList.textContent = "No products available.";
+                return;
+            }
+
+            products.forEach(product => {
+                const card = document.createElement("div");
+                card.className = "product-card";
+
+                const details = document.createElement("div");
+
+                const name = document.createElement("h3");
+                name.textContent = product.name;
+
+                const info = document.createElement("p");
+                info.textContent =
+                    money(product.price) + " | Stock: " + product.stock;
+
+                details.append(name, info);
+
+                const input = document.createElement("input");
+                input.type = "number";
+                input.id = "quantity-" + product.id;
+                input.min = "0";
+                input.max = String(product.stock);
+                input.step = "1";
+                input.value = "0";
+                input.placeholder = "Quantity";
+                input.setAttribute(
+                    "aria-label",
+                    "Quantity for " + product.name
+                );
+
+                input.disabled = Number(product.stock) <= 0;
+
+                if (input.disabled) {
+                    input.placeholder = "Out of stock";
+                }
+
+                input.addEventListener("input", updateTotal);
+
+                card.append(details, input);
+                productsList.appendChild(card);
+            });
+
+            updateTotal();
+
+        } catch (error) {
+            productsList.textContent = error.message;
+        }
+    }
+
+    form.addEventListener("submit", async function(event) {
+        event.preventDefault();
+
+        message.textContent = "";
+        whatsappLink.style.display = "none";
+
+        const items = getSelectedItems();
+
+        if (items.length === 0) {
+            message.textContent = "Please select at least one product.";
+            return;
+        }
+
+        for (const item of items) {
+            const product = products.find(
+                p => Number(p.id) === item.product_id
+            );
+
+            if (
+                !Number.isInteger(item.quantity) ||
+                item.quantity < 1 ||
+                item.quantity > Number(product.stock)
+            ) {
+                message.textContent =
+                    "Please check the quantity for " + product.name +
+                    ". Available stock: " + product.stock;
+                return;
+            }
+        }
+
+        const orderData = {
+            customer_name: document.getElementById("customer").value.trim(),
+            phone: document.getElementById("phone").value.trim(),
+            notes: document.getElementById("notes").value.trim(),
+            items: items
+        };
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Submitting...";
+
+        try {
+            const response = await fetch("/api/orders", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(orderData)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || "Order failed.");
+            }
+
+            const total = Number(result.total_price);
+
+            message.textContent =
+                "Thank you! Order #" + result.order_id +
+                " received. Total: " + money(total) +
+                ". Status: " + result.status + ".";
+
+            const itemDetails = items.map(item => {
+                const product = products.find(
+                    p => Number(p.id) === item.product_id
+                );
+
+                return product.name + " x " + item.quantity;
+            }).join(", ");
+
+            const whatsappMessage =
+                "Hello JD Poultry Farm. I submitted order #" +
+                result.order_id + ". Products: " + itemDetails +
+                ". Total: " + money(total) +
+                ". Name: " + orderData.customer_name + ".";
+
+            whatsappLink.href =
+                "https://wa.me/250794548019?text=" +
+                encodeURIComponent(whatsappMessage);
+
+            whatsappLink.style.display = "block";
+
+            form.reset();
+            await loadProducts();
+
+        } catch (error) {
+            message.textContent = error.message;
+
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Submit Order";
+        }
+    });
+
+    loadProducts();
+</script>
+
+</body>
+</html>

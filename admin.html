@@ -1,0 +1,971 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JD Poultry Farm | Admin Dashboard</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:#f4f6f3;color:#263238}
+header{background:#173f2b;color:white;padding:20px 5%;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px}
+header h1{font-size:23px}
+header p{margin-top:5px;color:#d5e6d9}
+button{border:none;padding:10px 14px;border-radius:5px;cursor:pointer;font-weight:bold}
+button:disabled{opacity:.6;cursor:not-allowed}
+.logout-btn,.delete-btn,.remove-image-btn{background:#dc3545;color:white}
+.container{width:92%;max-width:1300px;margin:30px auto}
+.welcome{margin-bottom:25px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:18px;margin-bottom:30px}
+.card,.section{background:white;padding:22px;border-radius:9px;box-shadow:0 2px 10px #0000000c}
+.card h3{font-size:14px;color:#66736b;margin-bottom:12px}
+.card h2{color:#173f2b;font-size:27px;overflow-wrap:anywhere}
+.sales-card{border-left:5px solid #198754}
+.section{margin-bottom:28px;overflow-x:auto}
+.section h2{margin-bottom:20px}
+.section-description{margin:-10px 0 18px;color:#66736b;font-size:14px}
+table{width:100%;min-width:850px;border-collapse:collapse}
+th,td{padding:13px;text-align:left;vertical-align:top;border-bottom:1px solid #e8ece8}
+th{background:#edf4ee;color:#173f2b}
+input,select{padding:9px;border:1px solid #ccc;border-radius:5px;width:100%;min-width:75px}
+.product-input{min-width:110px}
+.add-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;align-items:end;margin-bottom:25px}
+.form-group label{display:block;margin-bottom:7px;font-weight:bold;font-size:13px}
+.add-btn,.update-btn{background:#198754;color:white}
+.status-btn,.restore-btn,.restock-btn,.upload-image-btn{background:#173f2b;color:white;margin-top:5px}
+.message{margin-top:15px;font-size:14px;min-height:18px}
+.refresh-btn{background:#e9f1eb;color:#173f2b;margin-bottom:15px}
+.footer{text-align:center;padding:25px;color:#777}
+.price-help{display:block;margin-top:5px;color:#66736b;font-size:12px}
+.order-item{margin-bottom:9px;padding-bottom:9px;border-bottom:1px solid #e8ece8}
+.order-item:last-child{border-bottom:none}
+.order-item small{display:block;color:#66736b;margin-top:4px}
+.report-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.report-heading h2{margin-bottom:0}
+.chart-row{display:grid;grid-template-columns:100px 1fr 110px;gap:12px;align-items:center;margin-bottom:12px}
+.chart-track{background:#edf4ee;height:13px;border-radius:10px;overflow:hidden}
+.chart-fill{background:#198754;height:100%;border-radius:10px}
+.chart-value{text-align:right;font-size:13px;font-weight:bold}
+.chart-label{font-size:13px}
+.stock-warning{color:#dc3545;font-weight:bold;background:#ffe5e5;padding:7px 10px;border-radius:5px;display:inline-block}
+.active-label{color:#198754;background:#e0f5e8;padding:6px 9px;border-radius:5px;font-size:12px;font-weight:bold}
+.low-stock-alert{background:#fff3cd;border-left:5px solid #ffc107;padding:15px;margin-bottom:12px;border-radius:6px}
+.stock-alert-title{color:#b45309;margin-bottom:15px}
+.hidden-product{background:#fff5f5}
+.hidden-label{color:#dc3545;background:#ffe5e5;padding:6px 9px;border-radius:5px;font-size:12px;font-weight:bold}
+.action-buttons{display:flex;flex-direction:column;gap:6px;min-width:120px}
+.product-image-preview{width:85px;height:75px;object-fit:cover;border-radius:7px;border:1px solid #ddd;display:block;margin-bottom:8px;background:#f4f6f3}
+.image-upload{display:flex;flex-direction:column;gap:7px;min-width:150px}
+.image-upload input{font-size:12px}
+.logo-section{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:15px}
+.logo-preview{width:100px;height:100px;object-fit:contain;border:1px solid #ddd;border-radius:8px;background:#f4f6f3;padding:5px}
+@media(max-width:600px){.container{width:95%}.card,.section{padding:15px}header h1{font-size:19px}.chart-row{grid-template-columns:75px 1fr}.chart-value{grid-column:2}}
+</style>
+</head>
+
+<body>
+<header>
+    <div>
+        <h1>JD Poultry Farm</h1>
+        <p>Admin Dashboard</p>
+    </div>
+    <button class="logout-btn" id="logoutBtn">Logout</button>
+</header>
+
+<main class="container">
+    <div class="welcome">
+        <h2>Welcome to Admin Dashboard</h2>
+        <p>Manage your poultry business, products, stock and customer orders.</p>
+    </div>
+
+    <section class="cards">
+        <div class="card"><h3>Active Products</h3><h2 id="totalProducts">0</h2></div>
+        <div class="card"><h3>Hidden Products</h3><h2 id="hiddenProducts">0</h2></div>
+        <div class="card"><h3>Total Stock</h3><h2 id="totalStock">0</h2></div>
+        <div class="card"><h3>Total Orders</h3><h2 id="totalOrders">0</h2></div>
+        <div class="card"><h3>Pending Orders</h3><h2 id="pendingOrders">0</h2></div>
+        <div class="card"><h3>Backend Status</h3><h2 id="backendStatus">Checking...</h2></div>
+    </section>
+
+    <section class="cards">
+        <div class="card sales-card"><h3>Total Sales</h3><h2 id="totalSales">0 RWF</h2></div>
+        <div class="card"><h3>Completed Orders</h3><h2 id="completedOrders">0</h2></div>
+        <div class="card"><h3>Confirmed Orders</h3><h2 id="confirmedOrders">0</h2></div>
+        <div class="card"><h3>Cancelled Orders</h3><h2 id="cancelledOrders">0</h2></div>
+    </section>
+
+    <section class="section">
+        <h2 class="stock-alert-title">⚠️ Stock Alerts</h2>
+        <p class="section-description">Active products with 10 or fewer items remaining.</p>
+        <div id="stockAlerts">Checking stock...</div>
+    </section>
+
+    <section class="section">
+        <h2>Best-Selling Products</h2>
+        <table>
+            <thead><tr><th>Rank</th><th>Product</th><th>Quantity Sold</th><th>Revenue (RWF)</th></tr></thead>
+            <tbody id="bestSellingTable"><tr><td colspan="4">Loading...</td></tr></tbody>
+        </table>
+    </section>
+
+    <section class="section">
+        <h2>Daily Sales</h2>
+        <p class="section-description">Revenue generated each day from completed orders.</p>
+        <div id="dailySalesChart">Loading daily sales...</div>
+        <table>
+            <thead><tr><th>Date</th><th>Sales (RWF)</th></tr></thead>
+            <tbody id="dailySalesTable"><tr><td colspan="2">Loading...</td></tr></tbody>
+        </table>
+    </section>
+
+    <section class="section">
+        <h2>Monthly Sales</h2>
+        <p class="section-description">Monthly revenue from completed orders.</p>
+        <div id="monthlySalesChart">Loading monthly sales...</div>
+        <table>
+            <thead><tr><th>Month</th><th>Sales (RWF)</th></tr></thead>
+            <tbody id="monthlySalesTable"><tr><td colspan="2">Loading...</td></tr></tbody>
+        </table>
+    </section>
+
+    <!-- FARM LOGO -->
+    <section class="section">
+        <h2>JD Poultry Farm Logo</h2>
+        <div class="logo-section">
+            <img id="logoPreview" class="logo-preview" alt="JD Poultry Farm Logo">
+            <div>
+                <label for="logoFile">Choose Farm Logo</label>
+                <input type="file" id="logoFile" accept="image/png,image/jpeg,image/webp">
+                <button type="button" class="upload-image-btn" id="uploadLogoBtn">Upload Logo</button>
+                <button type="button" class="remove-image-btn" id="removeLogoBtn">Remove Logo</button>
+            </div>
+        </div>
+        <p class="message" id="logoMessage"></p>
+    </section>
+
+    <!-- ADD PRODUCT -->
+    <section class="section">
+        <h2>Add New Product</h2>
+        <form id="addProductForm" class="add-form">
+            <div class="form-group">
+                <label for="newName">Product Name</label>
+                <input type="text" id="newName" placeholder="e.g. Inkoko kazi" minlength="2" maxlength="100" required>
+            </div>
+            <div class="form-group">
+                <label for="newPrice">Price (RWF)</label>
+                <input type="text" id="newPrice" inputmode="decimal" placeholder="e.g. 10k or 10000" required>
+                <small class="price-help">Examples: 10k, 2.5k, 15k, 1,500</small>
+            </div>
+            <div class="form-group">
+                <label for="newStock">Available Stock</label>
+                <input type="number" id="newStock" min="0" step="1" required>
+            </div>
+            <button type="submit" class="add-btn" id="addProductBtn">Add Product</button>
+        </form>
+        <p class="message" id="addMessage"></p>
+    </section>
+
+    <!-- MANAGE PRODUCTS -->
+    <section class="section">
+        <div class="report-heading">
+            <h2>Manage Products, Images, Prices & Stock</h2>
+            <button class="refresh-btn" id="refreshProducts">Refresh Products</button>
+        </div>
+        <p class="section-description">Edit products, upload images, add stock, hide or restore products. Order history is preserved.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th><th>Product Name</th><th>Image</th><th>Price (RWF)</th><th>Stock</th><th>Status</th><th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="productsTable"><tr><td colspan="7">Loading products...</td></tr></tbody>
+        </table>
+        <p class="message" id="productMessage"></p>
+    </section>
+
+    <!-- CUSTOMER ORDERS -->
+    <section class="section">
+        <div class="report-heading">
+            <h2>Customer Orders</h2>
+            <button class="refresh-btn" id="refreshOrders">Refresh Orders</button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Order ID</th><th>Customer</th><th>Phone</th><th>Products</th><th>Total Quantity</th><th>Total (RWF)</th><th>Status</th><th>Date</th><th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="ordersTable"><tr><td colspan="9">Loading orders...</td></tr></tbody>
+        </table>
+        <p class="message" id="orderMessage"></p>
+    </section>
+
+    <p class="message" id="reportMessage"></p>
+    <button class="refresh-btn" id="refreshReport">Refresh Sales Report</button>
+</main>
+
+<div class="footer">© 2026 JD Poultry Farm. All Rights Reserved.</div>
+
+<script>
+"use strict";
+
+// GENERAL HELPERS
+function money(value) {
+    return Number(value || 0).toLocaleString("en-US");
+}
+
+function parsePrice(value) {
+    const text = String(value || "").trim().toLowerCase().replace(/,/g, "").replace(/\s/g, "");
+    if (!text) return NaN;
+    const multiplier = text.endsWith("k") ? 1000 : 1;
+    const number = Number(multiplier === 1000 ? text.slice(0, -1) : text);
+    const result = number * multiplier;
+    return Number.isSafeInteger(result) && result >= 0 ? result : NaN;
+}
+
+function makeCell(value) {
+    const cell = document.createElement("td");
+    cell.textContent = value ?? "";
+    return cell;
+}
+
+function makeEmptyRow(columns, message) {
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = columns;
+    cell.textContent = message;
+    row.appendChild(cell);
+    return row;
+}
+
+async function apiRequest(url, options = {}) {
+    const headers = {...(options.headers || {})};
+    if (options.body && !(options.body instanceof FormData)) {
+        headers["Content-Type"] = "application/json";
+    }
+
+    const response = await fetch(url, {
+        ...options,
+        headers,
+        credentials: "same-origin"
+    });
+
+    let result = {};
+    try { result = await response.json(); } catch {}
+
+    if (response.status === 401) {
+        window.location.href = "/login.html";
+        throw new Error("Admin session expired.");
+    }
+
+    if (!response.ok) {
+        throw new Error(result.message || "Request failed.");
+    }
+    return result;
+}
+
+async function checkLogin() {
+    try {
+        const result = await apiRequest("/api/me");
+        if (!result.authenticated) {
+            window.location.href = "/login.html";
+            return false;
+        }
+        return true;
+    } catch {
+        window.location.href = "/login.html";
+        return false;
+    }
+}
+
+// IMAGE VALIDATION AND PREVIEW
+function validateImage(file) {
+    if (!file) throw new Error("Please choose an image.");
+    if (!["image/jpeg","image/png","image/webp"].includes(file.type)) {
+        throw new Error("Only JPG, PNG and WEBP images are allowed.");
+    }
+    if (file.size > 5 * 1024 * 1024) {
+        throw new Error("Image must not exceed 5 MB.");
+    }
+}
+
+function showImagePreview(file, imageElement) {
+    try {
+        validateImage(file);
+        const reader = new FileReader();
+        reader.onload = () => { imageElement.src = reader.result; };
+        reader.readAsDataURL(file);
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+// PRODUCT IMAGE UPLOAD
+async function uploadProductImage(id, input, message) {
+    try {
+        const file = input.files[0];
+        validateImage(file);
+
+        const formData = new FormData();
+        formData.append("image", file);
+
+        message.textContent = "Uploading image...";
+
+        const response = await fetch("/api/products/" + id + "/image", {
+            method: "POST",
+            body: formData,
+            credentials: "same-origin"
+        });
+
+        let result = {};
+        try { result = await response.json(); } catch {}
+
+        if (response.status === 401) {
+            window.location.href = "/login.html";
+            return;
+        }
+        if (!response.ok) throw new Error(result.message || "Image upload failed.");
+
+        message.textContent = "Image uploaded successfully!";
+        await loadProducts();
+    } catch (error) {
+        message.textContent = error.message;
+    }
+}
+
+async function removeProductImage(id, message) {
+    if (!confirm("Remove this product image?")) return;
+    try {
+        await apiRequest("/api/products/" + id + "/image", {method:"DELETE"});
+        message.textContent = "Image removed successfully.";
+        await loadProducts();
+    } catch (error) {
+        message.textContent = error.message;
+    }
+}
+
+// FARM LOGO
+async function loadFarmLogo() {
+    const preview = document.getElementById("logoPreview");
+    try {
+        const result = await apiRequest("/api/site-settings/logo");
+        if (result.logo_url) {
+            preview.src = result.logo_url;
+        } else {
+            preview.removeAttribute("src");
+            preview.alt = "No logo uploaded";
+        }
+    } catch (error) {
+        document.getElementById("logoMessage").textContent = error.message;
+    }
+}
+
+document.getElementById("logoFile").addEventListener("change", function() {
+    if (this.files[0]) showImagePreview(this.files[0], document.getElementById("logoPreview"));
+});
+
+document.getElementById("uploadLogoBtn").addEventListener("click", async function() {
+    const input = document.getElementById("logoFile");
+    const message = document.getElementById("logoMessage");
+
+    try {
+        validateImage(input.files[0]);
+        const formData = new FormData();
+        formData.append("image", input.files[0]);
+        message.textContent = "Uploading logo...";
+
+        const response = await fetch("/api/site-settings/logo", {
+            method:"POST",
+            body:formData,
+            credentials:"same-origin"
+        });
+
+        let result = {};
+        try { result = await response.json(); } catch {}
+
+        if (response.status === 401) {
+            window.location.href = "/login.html";
+            return;
+        }
+        if (!response.ok) throw new Error(result.message || "Logo upload failed.");
+
+        message.textContent = "Logo uploaded successfully!";
+        input.value = "";
+        await loadFarmLogo();
+    } catch (error) {
+        message.textContent = error.message;
+    }
+});
+
+document.getElementById("removeLogoBtn").addEventListener("click", async function() {
+    if (!confirm("Remove the farm logo?")) return;
+    const message = document.getElementById("logoMessage");
+    try {
+        await apiRequest("/api/site-settings/logo", {method:"DELETE"});
+        message.textContent = "Logo removed.";
+        await loadFarmLogo();
+    } catch (error) {
+        message.textContent = error.message;
+    }
+});
+
+// SALES CHART
+function showChart(containerId, items, labelKey, valueKey) {
+    const container = document.getElementById(containerId);
+    container.replaceChildren();
+
+    if (!items || !items.length) {
+        container.textContent = "No sales data available.";
+        return;
+    }
+
+    const maximum = Math.max(...items.map(item => Number(item[valueKey] || 0)), 1);
+
+    items.forEach(item => {
+        const row = document.createElement("div");
+        row.className = "chart-row";
+
+        const label = document.createElement("div");
+        label.className = "chart-label";
+        label.textContent = item[labelKey] ?? "";
+
+        const track = document.createElement("div");
+        track.className = "chart-track";
+
+        const fill = document.createElement("div");
+        fill.className = "chart-fill";
+        fill.style.width = (Number(item[valueKey] || 0) / maximum * 100) + "%";
+        track.appendChild(fill);
+
+        const value = document.createElement("div");
+        value.className = "chart-value";
+        value.textContent = money(item[valueKey]) + " RWF";
+
+        row.append(label, track, value);
+        container.appendChild(row);
+    });
+}
+
+// LOAD PRODUCTS
+async function loadProducts() {
+    const table = document.getElementById("productsTable");
+    const message = document.getElementById("productMessage");
+    table.replaceChildren(makeEmptyRow(7, "Loading products..."));
+
+    try {
+        const products = await apiRequest("/api/products");
+        if (!Array.isArray(products)) throw new Error("Invalid products response.");
+
+        table.replaceChildren();
+
+        const active = products.filter(p => Number(p.is_active) !== 0);
+        const hidden = products.length - active.length;
+        const totalStock = active.reduce((sum,p) => sum + Number(p.stock || 0), 0);
+
+        document.getElementById("totalProducts").textContent = active.length;
+        document.getElementById("hiddenProducts").textContent = hidden;
+        document.getElementById("totalStock").textContent = totalStock;
+
+        products.forEach(product => {
+            const isActive = Number(product.is_active) !== 0;
+            const row = document.createElement("tr");
+            if (!isActive) row.className = "hidden-product";
+
+            row.appendChild(makeCell(product.id));
+
+            const nameCell = document.createElement("td");
+            const nameInput = document.createElement("input");
+            nameInput.type = "text";
+            nameInput.value = product.name || "";
+            nameInput.maxLength = 100;
+            nameInput.className = "product-input";
+            nameInput.id = "name-" + product.id;
+            nameInput.disabled = !isActive;
+            nameCell.appendChild(nameInput);
+            row.appendChild(nameCell);
+
+            // IMAGE COLUMN
+            const imageCell = document.createElement("td");
+            const imageBox = document.createElement("div");
+            imageBox.className = "image-upload";
+
+            const preview = document.createElement("img");
+            preview.className = "product-image-preview";
+            preview.alt = product.name + " image";
+            if (product.image_url) preview.src = product.image_url;
+
+            const fileInput = document.createElement("input");
+            fileInput.type = "file";
+            fileInput.accept = "image/png,image/jpeg,image/webp";
+            fileInput.disabled = !isActive;
+
+            fileInput.addEventListener("change", () => {
+                if (fileInput.files[0]) showImagePreview(fileInput.files[0], preview);
+            });
+
+            const imageMessage = document.createElement("small");
+            const uploadBtn = document.createElement("button");
+            uploadBtn.type = "button";
+            uploadBtn.className = "upload-image-btn";
+            uploadBtn.textContent = product.image_url ? "Change Image" : "Upload Image";
+            uploadBtn.disabled = !isActive;
+            uploadBtn.addEventListener("click", () => uploadProductImage(product.id, fileInput, imageMessage));
+
+            imageBox.append(preview, fileInput, uploadBtn);
+
+            if (product.image_url) {
+                const removeBtn = document.createElement("button");
+                removeBtn.type = "button";
+                removeBtn.className = "remove-image-btn";
+                removeBtn.textContent = "Remove Image";
+                removeBtn.disabled = !isActive;
+                removeBtn.addEventListener("click", () => removeProductImage(product.id, imageMessage));
+                imageBox.appendChild(removeBtn);
+            }
+
+            imageBox.appendChild(imageMessage);
+            imageCell.appendChild(imageBox);
+            row.appendChild(imageCell);
+
+            const priceCell = document.createElement("td");
+            const priceInput = document.createElement("input");
+            priceInput.type = "text";
+            priceInput.inputMode = "decimal";
+            priceInput.value = product.price;
+            priceInput.className = "product-input";
+            priceInput.id = "price-" + product.id;
+            priceInput.disabled = !isActive;
+            priceCell.appendChild(priceInput);
+            row.appendChild(priceCell);
+
+            const stockCell = document.createElement("td");
+            const stockInput = document.createElement("input");
+            stockInput.type = "number";
+            stockInput.min = "0";
+            stockInput.step = "1";
+            stockInput.value = product.stock;
+            stockInput.className = "product-input";
+            stockInput.id = "stock-" + product.id;
+            stockInput.disabled = !isActive;
+            stockCell.appendChild(stockInput);
+            row.appendChild(stockCell);
+
+            const statusCell = document.createElement("td");
+            const status = document.createElement("span");
+
+            if (!isActive) {
+                status.className = "hidden-label";
+                status.textContent = "Hidden";
+            } else if (Number(product.stock) <= 10) {
+                status.className = "stock-warning";
+                status.textContent = "Low stock";
+            } else {
+                status.className = "active-label";
+                status.textContent = "Active";
+            }
+
+            statusCell.appendChild(status);
+            row.appendChild(statusCell);
+
+            const actionCell = document.createElement("td");
+            const actions = document.createElement("div");
+            actions.className = "action-buttons";
+
+            if (isActive) {
+                const update = document.createElement("button");
+                update.className = "update-btn";
+                update.textContent = "Save Changes";
+                update.addEventListener("click", () => updateProduct(product.id));
+
+                const restock = document.createElement("button");
+                restock.className = "restock-btn";
+                restock.textContent = "Add Stock";
+                restock.addEventListener("click", () => addStock(product.id));
+
+                const hide = document.createElement("button");
+                hide.className = "delete-btn";
+                hide.textContent = "Hide Product";
+                hide.addEventListener("click", () => hideProduct(product.id, product.name));
+
+                actions.append(update, restock, hide);
+            } else {
+                const restore = document.createElement("button");
+                restore.className = "restore-btn";
+                restore.textContent = "Restore Product";
+                restore.addEventListener("click", () => restoreProduct(product.id, product.name));
+                actions.appendChild(restore);
+            }
+
+            actionCell.appendChild(actions);
+            row.appendChild(actionCell);
+            table.appendChild(row);
+        });
+
+        if (!products.length) table.appendChild(makeEmptyRow(7, "No products found."));
+
+        // STOCK ALERTS
+        const alerts = document.getElementById("stockAlerts");
+        alerts.replaceChildren();
+        const lowStock = active.filter(p => Number(p.stock) <= 10);
+
+        if (!lowStock.length) {
+            alerts.textContent = "All active products have sufficient stock.";
+        } else {
+            lowStock.forEach(product => {
+                const alert = document.createElement("div");
+                alert.className = "low-stock-alert";
+                const text = document.createElement("strong");
+                text.textContent = product.name + ": " + Number(product.stock) + " unit(s) remaining.";
+                alert.appendChild(text);
+                alerts.appendChild(alert);
+            });
+        }
+
+        message.textContent = "";
+    } catch (error) {
+        table.replaceChildren(makeEmptyRow(7, error.message));
+        message.textContent = error.message;
+    }
+}
+
+// ADD PRODUCT
+document.getElementById("addProductForm").addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const name = document.getElementById("newName").value.trim();
+    const price = parsePrice(document.getElementById("newPrice").value);
+    const stock = Number(document.getElementById("newStock").value);
+    const message = document.getElementById("addMessage");
+    const button = document.getElementById("addProductBtn");
+
+    if (name.length < 2 || name.length > 100 || !Number.isSafeInteger(price) ||
+        !Number.isSafeInteger(stock) || stock < 0) {
+        message.textContent = "Please enter a valid name, price and stock.";
+        return;
+    }
+
+    button.disabled = true;
+    message.textContent = "Adding product...";
+
+    try {
+        await apiRequest("/api/products", {
+            method:"POST",
+            body:JSON.stringify({name,price,stock})
+        });
+        message.textContent = "Product added successfully!";
+        this.reset();
+        await loadProducts();
+    } catch (error) {
+        message.textContent = error.message;
+    } finally {
+        button.disabled = false;
+    }
+});
+
+// UPDATE PRODUCT
+async function updateProduct(id) {
+    const name = document.getElementById("name-" + id).value.trim();
+    const price = parsePrice(document.getElementById("price-" + id).value);
+    const stock = Number(document.getElementById("stock-" + id).value);
+    const message = document.getElementById("productMessage");
+
+    if (name.length < 2 || name.length > 100 || !Number.isSafeInteger(price) ||
+        !Number.isSafeInteger(stock) || stock < 0) {
+        message.textContent = "Enter a valid name, price and stock.";
+        return;
+    }
+
+    try {
+        await apiRequest("/api/products/" + id, {
+            method:"PATCH",
+            body:JSON.stringify({name,price,stock})
+        });
+        message.textContent = "Product updated successfully!";
+        await loadProducts();
+    } catch (error) {
+        message.textContent = error.message;
+    }
+}
+
+// ADD STOCK
+async function addStock(id) {
+    const name = document.getElementById("name-" + id).value.trim();
+    const price = parsePrice(document.getElementById("price-" + id).value);
+    const current = Number(document.getElementById("stock-" + id).value);
+    const amountText = prompt("How many units do you want to add to " + name + "?", "10");
+
+    if (amountText === null) return;
+    const amount = Number(amountText);
+
+    if (!Number.isSafeInteger(amount) || amount <= 0 ||
+        !Number.isSafeInteger(current + amount)) {
+        alert("Enter a valid whole number greater than zero.");
+        return;
+    }
+
+    try {
+        await apiRequest("/api/products/" + id, {
+            method:"PATCH",
+            body:JSON.stringify({name,price,stock:current + amount})
+        });
+        document.getElementById("productMessage").textContent = amount + " units added.";
+        await loadProducts();
+    } catch (error) {
+        document.getElementById("productMessage").textContent = error.message;
+    }
+}
+
+// HIDE AND RESTORE
+async function hideProduct(id, name) {
+    if (!confirm("Hide '" + name + "' from customers? Order history will be preserved.")) return;
+    try {
+        await apiRequest("/api/products/" + id, {method:"DELETE"});
+        document.getElementById("productMessage").textContent = name + " has been hidden.";
+        await loadProducts();
+    } catch (error) {
+        document.getElementById("productMessage").textContent = error.message;
+    }
+}
+
+async function restoreProduct(id, name) {
+    if (!confirm("Restore '" + name + "'?")) return;
+    try {
+        await apiRequest("/api/products/" + id + "/restore", {method:"PATCH"});
+        document.getElementById("productMessage").textContent = name + " has been restored.";
+        await loadProducts();
+    } catch (error) {
+        document.getElementById("productMessage").textContent = error.message;
+    }
+}
+
+// SALES REPORT
+async function loadSalesReport() {
+    const message = document.getElementById("reportMessage");
+    message.textContent = "Loading sales report...";
+
+    try {
+        const report = await apiRequest("/api/reports/sales");
+        if (!report.success) throw new Error(report.message || "Sales report unavailable.");
+
+        const summary = report.summary || {};
+        document.getElementById("totalSales").textContent = money(summary.total_sales) + " RWF";
+        document.getElementById("totalOrders").textContent = summary.total_orders || 0;
+        document.getElementById("completedOrders").textContent = summary.completed_orders || 0;
+        document.getElementById("pendingOrders").textContent = summary.pending_orders || 0;
+        document.getElementById("confirmedOrders").textContent = summary.confirmed_orders || 0;
+        document.getElementById("cancelledOrders").textContent = summary.cancelled_orders || 0;
+
+        const bestTable = document.getElementById("bestSellingTable");
+        bestTable.replaceChildren();
+        const best = report.best_selling_products || [];
+
+        best.forEach((product,index) => {
+            const row = document.createElement("tr");
+            row.append(
+                makeCell(index + 1),
+                makeCell(product.product_name),
+                makeCell(product.quantity_sold),
+                makeCell(money(product.revenue))
+            );
+            bestTable.appendChild(row);
+        });
+        if (!best.length) bestTable.appendChild(makeEmptyRow(4, "No completed product sales yet."));
+
+        const daily = report.daily_sales || [];
+        const dailyTable = document.getElementById("dailySalesTable");
+        dailyTable.replaceChildren();
+        daily.forEach(item => {
+            const row = document.createElement("tr");
+            row.append(makeCell(item.date), makeCell(money(item.sales)));
+            dailyTable.appendChild(row);
+        });
+        if (!daily.length) dailyTable.appendChild(makeEmptyRow(2, "No daily sales available yet."));
+        showChart("dailySalesChart", daily, "date", "sales");
+
+        const monthly = report.monthly_sales || [];
+        const monthlyTable = document.getElementById("monthlySalesTable");
+        monthlyTable.replaceChildren();
+        monthly.forEach(item => {
+            const row = document.createElement("tr");
+            row.append(makeCell(item.month), makeCell(money(item.sales)));
+            monthlyTable.appendChild(row);
+        });
+        if (!monthly.length) monthlyTable.appendChild(makeEmptyRow(2, "No monthly sales available yet."));
+        showChart("monthlySalesChart", monthly, "month", "sales");
+
+        message.textContent = "Sales report updated successfully.";
+    } catch (error) {
+        message.textContent = error.message;
+    }
+}
+
+// CUSTOMER ORDERS
+async function loadOrders() {
+    const table = document.getElementById("ordersTable");
+    const message = document.getElementById("orderMessage");
+
+    try {
+        const orders = await apiRequest("/api/orders");
+        if (!Array.isArray(orders)) throw new Error("Invalid orders response.");
+        table.replaceChildren();
+
+        orders.forEach(order => {
+            const row = document.createElement("tr");
+            row.append(
+                makeCell("#" + order.id),
+                makeCell(order.customer_name),
+                makeCell(order.phone)
+            );
+
+            const productCell = document.createElement("td");
+            const items = Array.isArray(order.items) ? order.items : [];
+
+            if (items.length) {
+                items.forEach(item => {
+                    const line = document.createElement("div");
+                    line.className = "order-item";
+                    const name = document.createElement("strong");
+                    name.textContent = (item.product_name || "Product") + " × " + Number(item.quantity || 0);
+                    const detail = document.createElement("small");
+                    detail.textContent = "Unit: " + money(item.unit_price) +
+                        " RWF | Subtotal: " + money(item.total_price) + " RWF";
+                    line.append(name, detail);
+                    productCell.appendChild(line);
+                });
+            } else {
+                productCell.textContent = order.product_name || "Product information unavailable";
+            }
+
+            row.appendChild(productCell);
+
+            const totalQuantity = items.length
+                ? items.reduce((sum,item) => sum + Number(item.quantity || 0), 0)
+                : Number(order.quantity || 0);
+
+            row.append(
+                makeCell(totalQuantity),
+                makeCell(money(order.total_price) + " RWF")
+            );
+
+            const statusCell = document.createElement("td");
+            const select = document.createElement("select");
+            let statuses = [];
+
+            if (order.status === "Pending") statuses = ["Pending","Confirmed","Cancelled"];
+            else if (order.status === "Confirmed") statuses = ["Confirmed","Completed","Cancelled"];
+            else statuses = [order.status];
+
+            statuses.forEach(status => {
+                const option = document.createElement("option");
+                option.value = status;
+                option.textContent = status;
+                select.appendChild(option);
+            });
+
+            select.value = order.status;
+            statusCell.appendChild(select);
+            row.appendChild(statusCell);
+
+            row.appendChild(makeCell(
+                order.created_at
+                    ? new Date(order.created_at.replace(" ","T") + "Z").toLocaleString()
+                    : ""
+            ));
+
+            const actionCell = document.createElement("td");
+            const save = document.createElement("button");
+            save.className = "status-btn";
+            save.textContent = "Save Status";
+            save.addEventListener("click", () => updateOrderStatus(order.id, select.value));
+            actionCell.appendChild(save);
+
+            const whatsapp = document.createElement("a");
+            whatsapp.textContent = "WhatsApp";
+            whatsapp.className = "whatsapp-btn";
+            whatsapp.target = "_blank";
+            whatsapp.rel = "noopener noreferrer";
+
+            const phone = String(order.phone || "").replace(/\D/g, "");
+            const internationalPhone = phone.startsWith("0") ? "250" + phone.slice(1) : phone;
+            const details = items.length
+                ? items.map(item => (item.product_name || "Product") + " x " + item.quantity).join(", ")
+                : (order.product_name || "Product");
+
+            whatsapp.href = "https://wa.me/" + internationalPhone + "?text=" +
+                encodeURIComponent("Hello " + order.customer_name +
+                ", this is JD Poultry Farm regarding order #" + order.id +
+                ". Products: " + details + ". Total: " + money(order.total_price) + " RWF.");
+
+            actionCell.append(document.createElement("br"), whatsapp);
+            row.appendChild(actionCell);
+            table.appendChild(row);
+        });
+
+        if (!orders.length) table.appendChild(makeEmptyRow(9, "No customer orders yet."));
+        message.textContent = "";
+    } catch (error) {
+        table.replaceChildren(makeEmptyRow(9, error.message));
+        message.textContent = error.message;
+    }
+}
+
+// UPDATE ORDER STATUS
+async function updateOrderStatus(id, status) {
+    const message = document.getElementById("orderMessage");
+    try {
+        const result = await apiRequest("/api/orders/" + id + "/status", {
+            method:"PATCH",
+            body:JSON.stringify({status})
+        });
+        message.textContent = result.message || "Order status updated.";
+        await Promise.all([loadOrders(),loadProducts(),loadSalesReport()]);
+    } catch (error) {
+        message.textContent = error.message;
+    }
+}
+
+// BACKEND STATUS
+async function checkBackend() {
+    const status = document.getElementById("backendStatus");
+    try {
+        await apiRequest("/api/health");
+        status.textContent = "Online";
+    } catch {
+        status.textContent = "Offline";
+    }
+}
+
+// LOGOUT
+document.getElementById("logoutBtn").addEventListener("click", async () => {
+    try {
+        await apiRequest("/api/logout", {method:"POST"});
+        window.location.href = "/login.html";
+    } catch (error) {
+        alert(error.message);
+    }
+});
+
+// REFRESH BUTTONS
+document.getElementById("refreshProducts").addEventListener("click", loadProducts);
+document.getElementById("refreshOrders").addEventListener("click", loadOrders);
+document.getElementById("refreshReport").addEventListener("click", loadSalesReport);
+
+// START DASHBOARD
+async function startDashboard() {
+    const loggedIn = await checkLogin();
+    if (!loggedIn) return;
+
+    await Promise.all([
+        loadProducts(),
+        loadOrders(),
+        loadSalesReport(),
+        checkBackend(),
+        loadFarmLogo()
+    ]);
+}
+
+startDashboard();
+</script>
+</body>
+</html>

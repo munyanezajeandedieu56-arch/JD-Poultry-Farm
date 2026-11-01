@@ -1,0 +1,20 @@
+{
+  "id": "/",
+  "name": "JD Poultry Farm",
+  "short_name": "JD Poultry",
+  "description": "Quality poultry products and fresh eggs in Rwanda.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#263746",
+  "theme_color": "#263746",
+  "icons": [
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
