@@ -245,6 +245,25 @@
             background: white;
         }
 
+        /* ADMIN LOGIN LINK */
+        .admin-access {
+            margin-top: 18px;
+            text-align: center;
+        }
+
+        .admin-access a {
+            color: #d9b65d;
+            font-size: 12px;
+            text-decoration: none;
+            opacity: 0.75;
+            transition: opacity 0.3s ease;
+        }
+
+        .admin-access a:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+
         @media (max-width: 600px) {
             .hero-image,
             .hero-slides {
@@ -263,6 +282,7 @@
 
     <!-- JD POULTRY FARM INTRO SCREEN -->
     <div class="jd-intro" id="jdIntro" aria-label="Welcome to JD Poultry Farm">
+
         <div class="intro-content">
 
             <div class="intro-logo">
@@ -286,11 +306,14 @@
         <button type="button" class="intro-skip" id="skipIntro">
             Skip Intro →
         </button>
+
     </div>
 
     <!-- HEADER -->
     <header class="header">
+
         <a href="#home" class="brand">
+
             <span class="brand-icon" id="brandFallback">JD</span>
 
             <img
@@ -304,6 +327,7 @@
                 JD POULTRY FARM
                 <small>QUALITY • CARE • TRUST</small>
             </span>
+
         </a>
 
         <nav class="navigation">
@@ -319,6 +343,7 @@
            rel="noopener noreferrer">
             Order Now
         </a>
+
     </header>
 
     <main>
@@ -545,6 +570,13 @@
             &copy; <span id="year">2026</span>
             JD Poultry Farm. All rights reserved.
         </p>
+
+        <!-- ADMIN LOGIN LINK -->
+        <div class="admin-access">
+            <a href="/admin.html" title="Administrator Login">
+                Admin Login
+            </a>
+        </div>
 
     </footer>
 
